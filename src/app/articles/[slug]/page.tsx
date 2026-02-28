@@ -38,9 +38,14 @@ export default async function ArticlePage({ params }: PageProps) {
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] md:text-xs text-[var(--namanie-dim)] mb-8 md:mb-12 pb-6 md:pb-8 border-b border-[var(--namanie-border)]">
         <span>{article.meta.author}</span>
         <span>{dateFormatted}</span>
-        <span>~{article.meta.readMinutes} min</span>
       </div>
       <ArticleBody content={article.content} />
+      <Link
+        href="/articles"
+        className="mt-12 md:mt-16 inline-block text-[11px] md:text-xs text-[var(--namanie-red)] transition-transform duration-300 hover:-translate-x-2 min-h-[44px] flex items-center"
+      >
+        ← 記事一覧に戻る
+      </Link>
     </article>
   );
 }
