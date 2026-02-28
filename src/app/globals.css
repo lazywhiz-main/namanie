@@ -9,6 +9,15 @@
   --namanie-red: #b91c1c;
   --namanie-dim: rgba(17, 17, 17, 0.35);
   --namanie-border: rgba(17, 17, 17, 0.07);
+  /* 安全領域（ノッチ・ホームインジケータ） */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -16,10 +25,29 @@ body {
   background: var(--namanie-bg);
   color: var(--namanie-ink);
   overflow-x: hidden;
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 @layer utilities {
   .font-serif-namanie {
     font-family: var(--font-noto-serif-jp);
+  }
+}
+
+/* 記事本文：モバイルでドロップキャップを控えめに */
+.article-body p:first-of-type::first-letter {
+  font-size: 2.25em;
+}
+@media (min-width: 768px) {
+  .article-body p:first-of-type::first-letter {
+    font-size: 3.5em;
+  }
+}
+
+/* タッチデバイスでは赤いドットを非表示（N3の静けさを保つ） */
+@media (pointer: coarse) {
+  [data-red-dot] {
+    display: none !important;
   }
 }

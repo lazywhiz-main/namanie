@@ -32,6 +32,7 @@ export function RedDot() {
   return (
     <div
       ref={dotRef}
+      data-red-dot
       className="pointer-events-none fixed z-[10000] h-[10px] w-[10px] rounded-full bg-[var(--namanie-red)] opacity-70 mix-blend-multiply transition-transform duration-200"
       style={{ left: -100, top: -100 }}
       aria-hidden

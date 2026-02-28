@@ -34,7 +34,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         <RedDot />
         <Nav />
-        <main className="pt-20">{children}</main>
+        <main className="pt-16 md:pt-20">{children}</main>
         <Footer />
       </body>
     </html>

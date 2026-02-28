@@ -8,10 +8,10 @@ export default function ArticlesPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="px-6 pt-14 pb-3 md:px-[100px] text-[10px] tracking-[5px] uppercase text-[var(--namanie-dim)]">
+      <div className="px-4 pt-10 pb-2 sm:px-6 md:px-[100px] md:pt-14 md:pb-3 text-[10px] tracking-[4px] md:tracking-[5px] uppercase text-[var(--namanie-dim)]">
         Articles
       </div>
-      <RevealSection className="px-6 pb-24 md:px-[100px]">
+      <RevealSection className="px-4 pb-16 sm:px-6 md:px-[100px] md:pb-24">
         {articles.length > 0 ? (
           articles.map((article, i) => (
             <ArticleRow key={article.slug} article={article} index={i} />

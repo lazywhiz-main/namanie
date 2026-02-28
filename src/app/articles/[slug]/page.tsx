@@ -25,17 +25,17 @@ export default async function ArticlePage({ params }: PageProps) {
   const dateFormatted = formatDate(article.meta.date);
 
   return (
-    <article className="max-w-[640px] mx-auto px-6 py-20 md:px-10 pb-[120px]">
+    <article className="max-w-[640px] mx-auto px-4 py-12 sm:px-6 sm:py-16 md:px-10 md:py-20 pb-20 md:pb-[120px]">
       <Link
         href="/"
-        className="mb-15 inline-block text-xs text-[var(--namanie-red)] transition-transform duration-300 hover:-translate-x-2"
+        className="mb-10 md:mb-15 inline-block text-[11px] md:text-xs text-[var(--namanie-red)] transition-transform duration-300 hover:-translate-x-2 min-h-[44px] flex items-center"
       >
         ← 戻る
       </Link>
-      <h1 className="font-serif text-[32px] font-black leading-[1.7] mb-5">
+      <h1 className="font-serif text-[1.5rem] leading-[1.5] sm:text-2xl sm:leading-[1.6] md:text-[32px] md:leading-[1.7] font-black mb-4 md:mb-5">
         {article.meta.title}
       </h1>
-      <div className="flex gap-5 text-xs text-[var(--namanie-dim)] mb-12 pb-8 border-b border-[var(--namanie-border)]">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] md:text-xs text-[var(--namanie-dim)] mb-8 md:mb-12 pb-6 md:pb-8 border-b border-[var(--namanie-border)]">
         <span>{article.meta.author}</span>
         <span>{dateFormatted}</span>
         <span>~{article.meta.readMinutes} min</span>

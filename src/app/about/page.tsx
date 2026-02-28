@@ -3,33 +3,33 @@ import { RevealSection } from "@/components/RevealSection";
 export default function AboutPage() {
   return (
     <div className="min-h-screen">
-      <div className="px-6 py-20 md:px-[100px] md:pb-[100px]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 min-h-[50vh] items-center mb-16 md:mb-20">
+      <div className="px-4 py-12 sm:px-6 md:px-[100px] md:py-20 md:pb-[100px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 min-h-0 md:min-h-[50vh] items-center mb-12 md:mb-20">
           <div>
-            <h2 className="font-serif text-3xl md:text-[40px] font-black leading-[1.7]">
+            <h2 className="font-serif text-2xl sm:text-3xl md:text-[40px] font-black leading-[1.6] md:leading-[1.7]">
               <span className="text-[var(--namanie-red)]">生</span>
               のまま
               <br />
               差し出す
             </h2>
-            <p className="font-serif text-sm leading-[2.4] text-[rgba(17,17,17,0.6)] mt-4 mb-4">
+            <p className="font-serif text-[13px] sm:text-sm leading-[2.2] md:leading-[2.4] text-[rgba(17,17,17,0.6)] mt-4 mb-3 md:mb-4">
               「なまにえ」は、KCA（Art × Business School）の仲間たちが運営するWebメディアです。
             </p>
-            <p className="font-serif text-sm leading-[2.4] text-[rgba(17,17,17,0.6)] mb-4">
+            <p className="font-serif text-[13px] sm:text-sm leading-[2.2] md:leading-[2.4] text-[rgba(17,17,17,0.6)] mb-4">
               生贄のように自分を差し出す覚悟と、生煮えのように完成を待たない正直さ。ふたつの意味を重ねた名前です。
             </p>
           </div>
-          <div className="flex items-center justify-center relative">
-            <div className="font-serif text-[180px] md:text-[240px] font-black text-[rgba(17,17,17,0.03)] leading-none select-none">
+          <div className="flex items-center justify-center relative min-h-[140px] sm:min-h-[200px] md:min-h-0">
+            <div className="font-serif text-[120px] sm:text-[180px] md:text-[240px] font-black text-[rgba(17,17,17,0.03)] leading-none select-none">
               贄
             </div>
-            <div className="absolute bottom-[20%] right-[30%] w-12 h-12 border-2 border-[var(--namanie-red)] flex items-center justify-center font-serif text-base text-[var(--namanie-red)] -rotate-[8deg] opacity-60">
+            <div className="absolute bottom-[15%] right-[25%] md:bottom-[20%] md:right-[30%] w-10 h-10 md:w-12 md:h-12 border-2 border-[var(--namanie-red)] flex items-center justify-center font-serif text-sm md:text-base text-[var(--namanie-red)] -rotate-[8deg] opacity-60">
               贄
             </div>
           </div>
         </div>
 
-        <RevealSection className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <RevealSection className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 md:gap-12">
           <div className="opacity-0 translate-y-5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] [.in-view_&]:opacity-100 [.in-view_&]:translate-y-0">
             <div className="text-[10px] tracking-[4px] text-[var(--namanie-red)] mb-4">
               01

@@ -10,13 +10,13 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <Hero />
-      <div className="flex items-center justify-center py-12">
-        <div className="h-px w-10 bg-[var(--namanie-red)] opacity-30" />
+      <div className="flex items-center justify-center py-8 md:py-12">
+        <div className="h-px w-8 md:w-10 bg-[var(--namanie-red)] opacity-30" />
       </div>
-      <div className="px-6 pb-24 pt-3 md:px-[100px] text-[10px] tracking-[5px] uppercase text-[var(--namanie-dim)]">
+      <div className="px-4 pb-16 pt-2 sm:px-6 md:px-[100px] md:pb-24 md:pt-3 text-[10px] tracking-[4px] md:tracking-[5px] uppercase text-[var(--namanie-dim)]">
         Latest
       </div>
-      <RevealSection className="px-6 pb-24 md:px-[100px]">
+      <RevealSection className="px-4 pb-16 sm:px-6 md:px-[100px] md:pb-24">
         {articles.length > 0 ? (
           articles.map((article, i) => (
             <ArticleRow key={article.slug} article={article} index={i} />
