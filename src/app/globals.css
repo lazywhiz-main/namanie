@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* N3 Design Tokens: Minimal Unease */
+:root {
+  --namanie-bg: #fafaf8;
+  --namanie-ink: #111;
+  --namanie-red: #b91c1c;
+  --namanie-dim: rgba(17, 17, 17, 0.35);
+  --namanie-border: rgba(17, 17, 17, 0.07);
+}
+
+body {
+  font-family: var(--font-inter), sans-serif;
+  background: var(--namanie-bg);
+  color: var(--namanie-ink);
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .font-serif-namanie {
+    font-family: var(--font-noto-serif-jp);
+  }
+}

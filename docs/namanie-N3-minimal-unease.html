@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>なまにえ - Pattern N3: Minimal Unease</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #fafaf8;
+    --ink: #111;
+    --red: #b91c1c;
+    --dim: rgba(17,17,17,0.35);
+    --border: rgba(17,17,17,0.07);
+    --serif: 'Noto Serif JP', serif;
+    --sans: 'Inter', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ===== Cursor: red dot that follows ===== */
+  .red-dot {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: var(--red);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    mix-blend-mode: multiply;
+    transition: transform 0.2s;
+    opacity: 0.7;
+  }
+
+  /* ===== Nav ===== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 24px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(250,250,248,0.92);
+    backdrop-filter: blur(16px);
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .nav-links {
+    display: flex;
+    gap: 36px;
+  }
+  .nav-links a {
+    color: var(--dim);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+
+  /* ===== Pages ===== */
+  .page { display: none; min-height: 100vh; padding-top: 80px; }
+  .page.active { display: block; }
+
+  /* ===== TOP: Hero ===== */
+  .hero {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .hero-center {
+    text-align: center;
+    position: relative;
+  }
+
+  .hero-title {
+    font-family: var(--serif);
+    font-size: clamp(80px, 16vw, 220px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 20px;
+    color: var(--ink);
+    position: relative;
+  }
+  .hero-title .char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  .hero-title .char.in {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Random red accent on one character */
+  .hero-title .char.accent-char {
+    color: var(--red);
+  }
+
+  /* Subtle unease: one char slightly offset */
+  .hero-title .char.offset {
+    transform: translateY(-6px) !important;
+    transition-delay: 0.1s;
+  }
+
+  .hero-sub {
+    margin-top: 36px;
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: var(--dim);
+    opacity: 0;
+    transition: opacity 1s 1.5s;
+  }
+  .hero-sub.in { opacity: 1; }
+
+  /* A single red vertical line, slightly off-center */
+  .hero-vline {
+    position: absolute;
+    width: 1px;
+    height: 120px;
+    background: var(--red);
+    left: calc(50% + 80px);
+    bottom: -160px;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.8s;
+  }
+  .hero-vline.in { transform: scaleY(1); }
+
+  /* ===== Minimal Separator ===== */
+  .sep {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0;
+  }
+  .sep .line {
+    width: 40px;
+    height: 1px;
+    background: var(--red);
+    opacity: 0.3;
+  }
+
+  /* ===== Articles ===== */
+  .sec-label {
+    padding: 60px 100px 12px;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .articles-minimal {
+    padding: 0 100px 100px;
+  }
+  .art-row {
+    padding: 36px 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 40px;
+    align-items: baseline;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .art-row.revealed { opacity: 1; transform: translateY(0); }
+  .art-row:hover {
+    padding-left: 16px;
+  }
+  .art-row .num {
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--dim);
+    transition: color 0.3s;
+  }
+  .art-row:hover .num { color: var(--red); }
+  .art-row h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.7;
+    transition: color 0.3s;
+  }
+  .art-row:hover h3 { color: var(--red); }
+  .art-row .info {
+    font-size: 12px;
+    color: var(--dim);
+    text-align: right;
+    line-height: 1.8;
+    white-space: nowrap;
+  }
+  /* Red dot appears on hover */
+  .art-row .hover-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--red);
+    border-radius: 50%;
+    opacity: 0;
+    margin-left: 8px;
+    transition: opacity 0.3s;
+    vertical-align: middle;
+  }
+  .art-row:hover .hover-dot { opacity: 1; }
+
+  /* ===== Article Detail ===== */
+  .article-detail {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 80px 40px 120px;
+  }
+  .article-detail .back {
+    font-size: 12px;
+    color: var(--red);
+    cursor: pointer;
+    margin-bottom: 60px;
+    display: inline-block;
+    letter-spacing: 1px;
+    transition: transform 0.3s;
+  }
+  .article-detail .back:hover { transform: translateX(-8px); }
+  .article-detail h1 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .article-detail .meta {
+    font-size: 12px;
+    color: var(--dim);
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 20px;
+  }
+  .article-detail .body p {
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 2.4;
+    color: rgba(17,17,17,0.8);
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+  .article-detail .body p:first-of-type::first-letter {
+    font-size: 3.5em;
+    float: left;
+    line-height: 0.85;
+    margin-right: 10px;
+    margin-top: 6px;
+    color: var(--red);
+    font-weight: 900;
+  }
+  .article-detail .body blockquote {
+    margin: 36px 0;
+    padding: 24px 0 24px 28px;
+    border-left: 2px solid var(--red);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 2.2;
+    color: rgba(17,17,17,0.55);
+  }
+  /* 記事本文（外部HTML注入用）: h2, h3, img, ul, li など */
+  .article-detail .body h2 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    margin: 48px 0 16px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .article-detail .body h2:first-of-type { margin-top: 0; }
+  .article-detail .body h3, .article-detail .body h4 {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 700;
+    margin: 32px 0 12px;
+    color: var(--ink);
+  }
+  .article-detail .body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 24px 0;
+    border: 1px solid var(--border);
+  }
+  .article-detail .body ul {
+    margin: 20px 0;
+    padding-left: 1.5em;
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 2;
+    color: rgba(17,17,17,0.8);
+  }
+  .article-detail .body li { margin-bottom: 8px; }
+  .article-detail .body hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  .article-detail .body span { font-family: inherit; font-size: inherit; color: inherit; }
+
+  /* ===== About ===== */
+  .about-wrap {
+    padding: 60px 100px 100px;
+  }
+  .about-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    min-height: 50vh;
+    align-items: center;
+    margin-bottom: 80px;
+  }
+  .about-head h2 {
+    font-family: var(--serif);
+    font-size: 40px;
+    font-weight: 900;
+    line-height: 1.7;
+  }
+  .about-head h2 .red { color: var(--red); }
+  .about-head p {
+    font-family: var(--serif);
+    font-size: 14px;
+    line-height: 2.4;
+    color: rgba(17,17,17,0.6);
+    margin-bottom: 16px;
+  }
+
+  .about-kanji-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .about-big {
+    font-family: var(--serif);
+    font-size: 240px;
+    font-weight: 900;
+    color: rgba(17,17,17,0.03);
+    line-height: 1;
+    user-select: none;
+  }
+  /* Small red mark, like a stamp */
+  .stamp {
+    position: absolute;
+    bottom: 20%;
+    right: 30%;
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--red);
+    transform: rotate(-8deg);
+    opacity: 0.6;
+  }
+
+  .about-principles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+  .prin {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .prin.revealed { opacity: 1; transform: translateY(0); }
+  .prin .p-num {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--red);
+    margin-bottom: 16px;
+  }
+  .prin h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .prin p {
+    font-size: 13px;
+    line-height: 2;
+    color: var(--dim);
+  }
+  .prin .p-line {
+    width: 24px;
+    height: 1px;
+    background: var(--red);
+    margin-top: 20px;
+    opacity: 0.3;
+  }
+
+  /* ===== Writers ===== */
+  .writers-wrap {
+    padding: 20px 100px 100px;
+  }
+  .wr {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 32px;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateX(-16px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .wr.revealed { opacity: 1; transform: translateX(0); }
+  .wr .wr-av {
+    width: 64px;
+    height: 64px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--red);
+  }
+  .wr h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .wr .wr-role {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--red);
+    margin-bottom: 12px;
+  }
+  .wr .wr-bio {
+    font-size: 13px;
+    line-height: 2;
+    color: var(--dim);
+    max-width: 560px;
+  }
+
+  /* ===== Contact ===== */
+  .contact-wrap {
+    padding: 20px 100px 100px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+  }
+  .contact-wrap h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .contact-wrap .desc {
+    font-size: 14px;
+    line-height: 2;
+    color: var(--dim);
+    margin-bottom: 36px;
+  }
+  .ct-row {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    cursor: pointer;
+    transition: padding-left 0.3s;
+  }
+  .ct-row:hover { padding-left: 12px; }
+  .ct-row .ct-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(185,28,28,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--red);
+    transition: all 0.3s;
+  }
+  .ct-row:hover .ct-icon { background: var(--red); color: white; }
+  .ct-row .ct-lbl { font-size: 10px; letter-spacing: 2px; color: var(--dim); text-transform: uppercase; }
+  .ct-row .ct-val { font-size: 14px; margin-top: 2px; }
+
+  .form-section .f-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 28px;
+  }
+  .fg {
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .fg label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .fg input, .fg textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  .fg input:focus, .fg textarea:focus { border-bottom-color: var(--red); }
+  .fg textarea { min-height: 80px; resize: vertical; }
+  .fg .fl {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 1px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .fg input:focus ~ .fl, .fg textarea:focus ~ .fl { transform: scaleX(1); }
+
+  .send-btn {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 3px;
+    padding: 14px 40px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .send-btn:hover { background: var(--red); }
+
+  /* ===== Footer ===== */
+  footer {
+    padding: 36px 100px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--dim);
+  }
+  footer .fl {
+    font-family: var(--serif);
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: var(--ink);
+    font-size: 14px;
+  }
+
+  /* ===== Page Indicator ===== */
+  .page-ind {
+    position: fixed;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .page-ind .pi {
+    width: 6px; height: 6px;
+    border: 1px solid rgba(17,17,17,0.15);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .page-ind .pi.active {
+    background: var(--red);
+    border-color: var(--red);
+  }
+
+  /* ===== Design Spec ===== */
+  .design-spec {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 200;
+    background: rgba(17,17,17,0.95);
+    padding: 12px 40px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    font-size: 11px;
+    color: rgba(250,250,248,0.4);
+    letter-spacing: 1px;
+  }
+  .design-spec .lbl { color: var(--red); text-transform: uppercase; letter-spacing: 2px; }
+  .design-spec .dots { display: flex; gap: 6px; }
+  .design-spec .dots .d { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+
+  /* ===== Glitch micro-animation on title hover ===== */
+  @keyframes microGlitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-1px, 1px); }
+    40% { transform: translate(1px, -1px); }
+    60% { transform: translate(-1px, 0); }
+    80% { transform: translate(1px, 1px); }
+    100% { transform: translate(0); }
+  }
+  .hero-title:hover .char {
+    animation: microGlitch 0.15s ease-in-out;
+  }
+</style>
+</head>
+<body>
+
+<!-- Red dot cursor -->
+<div class="red-dot" id="redDot"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo" onclick="showPage('top')">なまにえ</div>
+  <div class="nav-links">
+    <a onclick="showPage('top')">Top</a>
+    <a onclick="showPage('article')">Articles</a>
+    <a onclick="showPage('about')">About</a>
+    <a onclick="showPage('writers')">Writers</a>
+    <a onclick="showPage('contact')">Contact</a>
+  </div>
+</nav>
+
+<!-- Page Indicator -->
+<div class="page-ind" id="pageInd">
+  <div class="pi active" onclick="showPage('top')"></div>
+  <div class="pi" onclick="showPage('article')"></div>
+  <div class="pi" onclick="showPage('about')"></div>
+  <div class="pi" onclick="showPage('writers')"></div>
+  <div class="pi" onclick="showPage('contact')"></div>
+</div>
+
+<!-- ==================== TOP ==================== -->
+<div class="page active" id="page-top">
+  <div class="hero">
+    <div class="hero-center">
+      <h1 class="hero-title" id="heroTitle">
+        <span class="char">な</span><span class="char accent-char">ま</span><span class="char">に</span><span class="char offset">え</span>
+      </h1>
+      <div class="hero-sub" id="heroSub">Raw Offerings from KCA</div>
+      <div class="hero-vline" id="heroVline"></div>
+    </div>
+  </div>
+
+  <div class="sep"><div class="line"></div></div>
+
+  <div class="sec-label">Latest</div>
+
+  <div class="articles-minimal">
+    <div class="art-row" onclick="showPage('article')">
+      <div class="num">01</div>
+      <h3>皮膚の下にある言葉を掘り出す<span class="hover-dot"></span></h3>
+      <div class="info">2025.02.14<br>山田 太郎</div>
+    </div>
+    <div class="art-row">
+      <div class="num">02</div>
+      <h3>アートは傷口から生まれる<span class="hover-dot"></span></h3>
+      <div class="info">2025.02.07<br>佐藤 花子</div>
+    </div>
+    <div class="art-row">
+      <div class="num">03</div>
+      <h3>煮え切らないまま差し出す勇気<span class="hover-dot"></span></h3>
+      <div class="info">2025.01.28<br>鈴木 一郎</div>
+    </div>
+    <div class="art-row">
+      <div class="num">04</div>
+      <h3>創刊の辞：なぜ「なまにえ」なのか<span class="hover-dot"></span></h3>
+      <div class="info">2025.01.20<br>編集部</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ARTICLE ==================== -->
+<div class="page" id="page-article">
+  <div class="article-detail">
+    <div class="back" onclick="showPage('top')">← 戻る</div>
+    <h1>皮膚の下にある言葉を掘り出す</h1>
+    <div class="meta"><span>山田 太郎</span><span>2025.02.14</span><span>~8 min</span></div>
+    <div class="body">
+      <p>言葉は常に表面に浮かんでくるものではない。時に、自分の内側を抉るようにして取り出さなければならない。KCAで学ぶ中で、僕は「洗練された表現」よりも「生々しい言葉」の方が、遥かに人の心を動かすことに気づいた。</p>
+      <blockquote>「完成された言葉は美しいが、未完成の言葉には血が通っている。」</blockquote>
+      <p>ビジネスの世界では、言葉は常に磨かれ、角を取られ、誰も傷つけないように加工される。しかし、そうして生まれた言葉に、果たして力はあるのだろうか。本当に伝えたいことは、たいてい言いにくいことだ。それを、加工せずに差し出すこと。それが「なまにえ」の精神だ。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ABOUT ==================== -->
+<div class="page" id="page-about">
+  <div class="about-wrap">
+    <div class="about-head">
+      <div>
+        <h2><span class="red">生</span>のまま<br>差し出す</h2>
+        <p>「なまにえ」は、KCA（Art × Business School）の仲間たちが運営するWebメディアです。</p>
+        <p>生贄のように自分を差し出す覚悟と、生煮えのように完成を待たない正直さ。ふたつの意味を重ねた名前です。</p>
+      </div>
+      <div class="about-kanji-area">
+        <div class="about-big">贄</div>
+        <div class="stamp">贄</div>
+      </div>
+    </div>
+
+    <div class="about-principles">
+      <div class="prin">
+        <div class="p-num">01</div>
+        <h3>生であること</h3>
+        <p>加工しない。磨かない。内側から出てきたものを、そのまま差し出す。</p>
+        <div class="p-line"></div>
+      </div>
+      <div class="prin">
+        <div class="p-num">02</div>
+        <h3>捧げること</h3>
+        <p>書くことは自分の一部を差し出すこと。その痛みに嘘はない。</p>
+        <div class="p-line"></div>
+      </div>
+      <div class="prin">
+        <div class="p-num">03</div>
+        <h3>未完であること</h3>
+        <p>煮え切らないまま世に出す。完成は読者との間に生まれる。</p>
+        <div class="p-line"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== WRITERS ==================== -->
+<div class="page" id="page-writers">
+  <div class="sec-label">Contributors</div>
+  <div class="writers-wrap">
+    <div class="wr">
+      <div class="wr-av">山</div>
+      <div>
+        <h3>山田 太郎</h3>
+        <div class="wr-role">Founder / Editor</div>
+        <div class="wr-bio">KCA 3期生。広告代理店を辞め、二度の起業に失敗。言葉の力を信じてこのメディアを立ち上げた。</div>
+      </div>
+    </div>
+    <div class="wr">
+      <div class="wr-av">佐</div>
+      <div>
+        <h3>佐藤 花子</h3>
+        <div class="wr-role">Writer / Artist</div>
+        <div class="wr-bio">現代美術作家。作品が売れない日々を経て「価値とは何か」を問い続けている。</div>
+      </div>
+    </div>
+    <div class="wr">
+      <div class="wr-av">鈴</div>
+      <div>
+        <h3>鈴木 一郎</h3>
+        <div class="wr-role">Writer / Designer</div>
+        <div class="wr-bio">UXデザイナー。「ユーザーのため」の欺瞞に気づき、デザインの本質を探求中。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CONTACT ==================== -->
+<div class="page" id="page-contact">
+  <div class="sec-label">Contact</div>
+  <div class="contact-wrap">
+    <div>
+      <h2>声を<br>聞かせてください</h2>
+      <div class="desc">寄稿、取材、あるいはただの感想でも。<br>煮え切らない言葉で構いません。</div>
+      <div class="ct-row">
+        <div class="ct-icon">✉</div>
+        <div><div class="ct-lbl">Email</div><div class="ct-val">hello@namanie.kca</div></div>
+      </div>
+      <div class="ct-row">
+        <div class="ct-icon">𝕏</div>
+        <div><div class="ct-lbl">Social</div><div class="ct-val">@namanie_kca</div></div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="f-label">Message</div>
+      <form onsubmit="return false;">
+        <div class="fg"><label>Name</label><input type="text" placeholder="お名前"><div class="fl"></div></div>
+        <div class="fg"><label>Email</label><input type="email" placeholder="メールアドレス"><div class="fl"></div></div>
+        <div class="fg"><label>Message</label><textarea placeholder="伝えたいこと"></textarea><div class="fl"></div></div>
+        <button class="send-btn" type="submit">送信する</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="fl">なまにえ</div>
+  <div>© 2025 なまにえ — KCA</div>
+  <div>Pattern N3: Minimal Unease</div>
+</footer>
+
+<!-- Design Spec -->
+<div class="design-spec">
+  <span class="lbl">Pattern N3</span>
+  <span>Minimal Unease / 静かな不穏</span>
+  <div class="dots">
+    <div class="d" style="background:#fafaf8"></div>
+    <div class="d" style="background:#111"></div>
+    <div class="d" style="background:#b91c1c"></div>
+  </div>
+  <span>Noto Serif JP + Inter</span>
+  <span>Minimal / Offset Typography / Quiet Tension</span>
+</div>
+
+<script>
+// Red dot cursor
+const redDot = document.getElementById('redDot');
+let rx = 0, ry = 0, mx = 0, my = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animDot() {
+  rx += (mx - rx) * 0.08;
+  ry += (my - ry) * 0.08;
+  redDot.style.left = rx - 5 + 'px';
+  redDot.style.top = ry - 5 + 'px';
+  requestAnimationFrame(animDot);
+}
+animDot();
+
+// Hero anim
+setTimeout(() => {
+  document.querySelectorAll('.hero-title .char').forEach((c, i) => {
+    setTimeout(() => c.classList.add('in'), i * 220);
+  });
+  setTimeout(() => document.getElementById('heroSub').classList.add('in'), 1200);
+  setTimeout(() => document.getElementById('heroVline').classList.add('in'), 1200);
+}, 300);
+
+// Page nav
+const pages = ['top','article','about','writers','contact'];
+const inds = document.querySelectorAll('.page-ind .pi');
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  inds.forEach(d => d.classList.remove('active'));
+  const i = pages.indexOf(name);
+  if (i >= 0) inds[i].classList.add('active');
+  window.scrollTo(0, 0);
+  setTimeout(observe, 100);
+}
+
+function observe() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('revealed'), i * 100);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.art-row:not(.revealed), .prin:not(.revealed), .wr:not(.revealed)').forEach(el => obs.observe(el));
+}
+setTimeout(observe, 100);
+</script>
+</body>
+</html>
