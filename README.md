@@ -42,7 +42,7 @@ readMinutes: 8         # 省略時は本文から自動算出
 
 ## 構成
 
-- `src/app/` — ページ（トップ・記事一覧・記事詳細・About・Writers・Contact）
+- `src/app/` — ページ（トップ・記事一覧・記事詳細・About（Contributors 含む）・Contact）
 - `src/components/` — Nav, Footer, Hero, ArticleRow, ArticleBody, RedDot, RevealSection
 - `src/lib/articles.ts` — 記事取得（getAllArticles, getArticleBySlug）
 - `src/data/writers.ts` — 執筆者一覧

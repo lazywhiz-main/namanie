@@ -1,3 +1,4 @@
+import { writers } from "@/data/writers";
 import { RevealSection } from "@/components/RevealSection";
 
 export default function AboutPage() {
@@ -61,6 +62,35 @@ export default function AboutPage() {
             <div className="w-6 h-px bg-[var(--namanie-red)] mt-5 opacity-30" />
           </div>
         </RevealSection>
+
+        {/* Contributors（Writers） */}
+        <section id="contributors" className="mt-16 md:mt-24">
+          <div className="text-[10px] tracking-[4px] md:tracking-[5px] uppercase text-[var(--namanie-dim)] mb-6 md:mb-8">
+            Contributors
+          </div>
+          <RevealSection>
+            {writers.map((w, i) => (
+              <div
+                key={w.id}
+                className="grid grid-cols-[56px_1fr] md:grid-cols-[64px_1fr] gap-5 md:gap-8 py-8 md:py-10 border-b border-[var(--namanie-border)] opacity-0 -translate-x-4 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] [.in-view_&]:opacity-100 [.in-view_&]:translate-x-0"
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <div className="w-14 h-14 md:w-16 md:h-16 bg-[var(--namanie-bg)] border border-[var(--namanie-border)] flex items-center justify-center font-serif text-lg md:text-xl font-black text-[var(--namanie-red)] shrink-0">
+                  {w.initial}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-serif text-lg md:text-xl font-bold mb-0.5 md:mb-1">{w.name}</h3>
+                  <div className="text-[10px] md:text-[11px] tracking-[2px] text-[var(--namanie-red)] mb-2 md:mb-3">
+                    {w.role}
+                  </div>
+                  <p className="text-[12px] md:text-[13px] leading-[1.9] md:leading-[2] text-[var(--namanie-dim)] max-w-[560px]">
+                    {w.bio}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </RevealSection>
+        </section>
       </div>
     </div>
   );
