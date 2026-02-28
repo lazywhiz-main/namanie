@@ -13,7 +13,6 @@ export function Footer() {
         なまにえ
       </Link>
       <div>© 2025 なまにえ — KCA</div>
-      <div>Pattern N3: Minimal Unease</div>
     </footer>
   );
 }
