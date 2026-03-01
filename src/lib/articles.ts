@@ -34,15 +34,24 @@ export function estimateReadMinutes(content: string): number {
   return Math.max(1, Math.round(len / 600));
 }
 
-/** 「## 以下コメント」で本文とコメントを分割。コメントが無い場合は commentsContent は null */
+/** 「以下コメント」の行（# / ## や ** の有無を問わない）で本文とコメントを分割 */
 export function splitArticleAndComments(content: string): { mainContent: string; commentsContent: string | null } {
-  const marker = "\n## 以下コメント\n";
-  const idx = content.indexOf(marker);
-  if (idx === -1) return { mainContent: content, commentsContent: null };
-  return {
-    mainContent: content.slice(0, idx).trimEnd(),
-    commentsContent: content.slice(idx + marker.length).trim(),
-  };
+  const lines = content.split(/\r?\n/);
+  const markerRe = /^#+\s*\*?\*?以下コメント\*?\*?\s*$/;
+  let splitIndex = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (markerRe.test(lines[i].trim())) {
+      splitIndex = i;
+      break;
+    }
+  }
+  if (splitIndex === -1) return { mainContent: content, commentsContent: null };
+  const mainContent = lines.slice(0, splitIndex).join("\n").trimEnd();
+  const commentsContent = lines
+    .slice(splitIndex + 1)
+    .join("\n")
+    .trim();
+  return { mainContent, commentsContent: commentsContent || null };
 }
 
 /** 見出しテキストから目次用に Markdown の装飾（** など）を除去 */

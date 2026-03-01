@@ -7,16 +7,18 @@ interface ArticleCommentsProps {
   content: string;
 }
 
-/** 「## 名前」＋本文のブロックにパース */
+/** 「## 名前」＋本文のブロックにパース。名前は「名前」のみ表示（# や ** を除去） */
 function parseCommentBlocks(content: string): { author: string; body: string }[] {
   const parts = content.split(/\n## /).filter(Boolean);
   return parts.map((block) => {
     const firstBreak = block.indexOf("\n\n");
-    if (firstBreak === -1) return { author: block.trim(), body: "" };
-    return {
-      author: block.slice(0, firstBreak).trim(),
-      body: block.slice(firstBreak + 2).trim(),
-    };
+    if (firstBreak === -1) {
+      const author = block.trim().replace(/^\s*#+\s*/, "").replace(/^\*\*|\*\*$/g, "").trim();
+      return { author, body: "" };
+    }
+    const rawAuthor = block.slice(0, firstBreak).trim();
+    const author = rawAuthor.replace(/^\s*#+\s*/, "").replace(/^\*\*|\*\*$/g, "").trim();
+    return { author, body: block.slice(firstBreak + 2).trim() };
   });
 }
 
