@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getArticleBySlug, getAllArticles } from "@/lib/articles";
+import { getArticleBySlug, getAllArticles, getHeadingsFromContent, splitArticleAndComments } from "@/lib/articles";
 import { ArticleBody } from "@/components/ArticleBody";
+import { ArticleToc } from "@/components/ArticleToc";
+import { ArticleComments } from "@/components/ArticleComments";
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -23,6 +25,10 @@ export default async function ArticlePage({ params }: PageProps) {
   if (!article) notFound();
 
   const dateFormatted = formatDate(article.meta.date);
+  const { mainContent, commentsContent } = splitArticleAndComments(article.content);
+  const headings = getHeadingsFromContent(mainContent);
+  const headingIds = headings.map((_, i) => `h-${i}`);
+  const tocHeadings = headings.map((h, i) => ({ ...h, id: headingIds[i] ?? "" }));
 
   return (
     <article className="max-w-[640px] mx-auto px-4 py-12 sm:px-6 sm:py-16 md:px-10 md:py-20 pb-20 md:pb-[120px]">
@@ -39,7 +45,9 @@ export default async function ArticlePage({ params }: PageProps) {
         <span>{article.meta.author}</span>
         <span>{dateFormatted}</span>
       </div>
-      <ArticleBody content={article.content} />
+      {tocHeadings.length > 0 && <ArticleToc headings={tocHeadings} />}
+      <ArticleBody content={mainContent} headingIds={headingIds} />
+      {commentsContent && <ArticleComments content={commentsContent} />}
       <Link
         href="/articles"
         className="mt-12 md:mt-16 inline-block text-[11px] md:text-xs text-[var(--namanie-red)] transition-transform duration-300 hover:-translate-x-2 min-h-[44px] flex items-center"

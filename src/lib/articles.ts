@@ -34,6 +34,38 @@ export function estimateReadMinutes(content: string): number {
   return Math.max(1, Math.round(len / 600));
 }
 
+/** 「## 以下コメント」で本文とコメントを分割。コメントが無い場合は commentsContent は null */
+export function splitArticleAndComments(content: string): { mainContent: string; commentsContent: string | null } {
+  const marker = "\n## 以下コメント\n";
+  const idx = content.indexOf(marker);
+  if (idx === -1) return { mainContent: content, commentsContent: null };
+  return {
+    mainContent: content.slice(0, idx).trimEnd(),
+    commentsContent: content.slice(idx + marker.length).trim(),
+  };
+}
+
+/** 見出しテキストから目次用に Markdown の装飾（** など）を除去 */
+function stripHeadingMarkdown(text: string): string {
+  let s = text.trim();
+  if (s.startsWith("**") && s.endsWith("**")) s = s.slice(2, -2).trim();
+  if (s.startsWith("*") && s.endsWith("*") && !s.includes("**")) s = s.slice(1, -1).trim();
+  return s;
+}
+
+/** 記事本文から見出し（## / ###）を出現順に抽出（目次用） */
+export function getHeadingsFromContent(content: string): { level: 2 | 3; text: string }[] {
+  const headings: { level: 2 | 3; text: string }[] = [];
+  const lines = content.split(/\r?\n/);
+  for (const line of lines) {
+    const h3 = line.match(/^### (.+)$/);
+    const h2 = line.match(/^## (.+)$/);
+    if (h3) headings.push({ level: 3, text: stripHeadingMarkdown(h3[1]) });
+    else if (h2) headings.push({ level: 2, text: stripHeadingMarkdown(h2[1]) });
+  }
+  return headings;
+}
+
 export function getAllArticles(): ArticleMeta[] {
   const paths = getArticleFilePaths();
   const articles: ArticleMeta[] = [];

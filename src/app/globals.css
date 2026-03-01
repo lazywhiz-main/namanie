@@ -9,6 +9,8 @@
   --namanie-red: #b91c1c;
   --namanie-dim: rgba(17, 17, 17, 0.35);
   --namanie-border: rgba(17, 17, 17, 0.07);
+  --namanie-toc-bg: rgba(17, 17, 17, 0.03);
+  --namanie-comments-bg: rgba(17, 17, 17, 0.02);
   /* 安全領域（ノッチ・ホームインジケータ） */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -33,6 +35,42 @@ body {
   .font-serif-namanie {
     font-family: var(--font-noto-serif-jp);
   }
+}
+
+/* 記事本文：箇条書き（N3トーン＝控えめなマーカー）・本文より内側にインデント */
+.article-body ul,
+.article-body ol {
+  list-style-position: outside;
+  padding-left: 2.5em;
+  margin-left: 1em;
+}
+.article-body ul {
+  list-style-type: disc;
+}
+.article-body ol {
+  list-style-type: decimal;
+}
+.article-body ul li::marker,
+.article-body ol li::marker {
+  color: var(--namanie-dim);
+}
+
+/* コメント欄の箇条書き：本文より内側にインデント（左に張り出さない） */
+.article-comments-body ul,
+.article-comments-body ol {
+  list-style-position: outside;
+  padding-left: 2.5em;
+  margin-left: 1em;
+}
+.article-comments-body ul {
+  list-style-type: disc;
+}
+.article-comments-body ol {
+  list-style-type: decimal;
+}
+.article-comments-body ul li::marker,
+.article-comments-body ol li::marker {
+  color: var(--namanie-dim);
 }
 
 /* 記事本文：モバイルでドロップキャップを控えめに */
