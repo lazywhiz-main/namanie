@@ -13,11 +13,8 @@ export default function AboutPage() {
               <br />
               差し出す
             </h2>
-            <p className="font-serif text-[13px] sm:text-sm leading-[2.2] md:leading-[2.4] text-[rgba(17,17,17,0.6)] mt-4 mb-3 md:mb-4">
-              「なまにえ」は、KCA（Art × Business School）の仲間たちが運営するWebメディアです。
-            </p>
-            <p className="font-serif text-[13px] sm:text-sm leading-[2.2] md:leading-[2.4] text-[rgba(17,17,17,0.6)] mb-4">
-              生贄のように自分を差し出す覚悟と、生煮えのように完成を待たない正直さ。ふたつの意味を重ねた名前です。
+            <p className="font-serif text-[13px] sm:text-sm leading-[2.2] md:leading-[2.4] text-[rgba(17,17,17,0.6)] mt-4 mb-4">
+              「なまにえ」は、「Kyoto Creative Assemblage」の修了生が執筆・運営するメディアです。人文社会学、アート、デザインの視座を横断的に学び、新しい時代を表現する方法を探究してきたメンバーが、その実践として、社会の小さな兆しを読み解き、「生煮え」のまま、未完成な考えをひらく場をつくる試みです。
             </p>
           </div>
           <div className="flex items-center justify-center relative min-h-[140px] sm:min-h-[200px] md:min-h-0">
