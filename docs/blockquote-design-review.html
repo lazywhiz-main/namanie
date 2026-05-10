@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>引用ブロック デザインレビュー（現行 vs 改善案）</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* N3 トークン（globals.css と同等） */
+      :root {
+        --namanie-bg: #fafaf8;
+        --namanie-ink: #111;
+        --namanie-red: #b91c1c;
+        --namanie-dim: rgba(17, 17, 17, 0.35);
+        --namanie-border: rgba(17, 17, 17, 0.07);
+        --namanie-toc-bg: rgba(17, 17, 17, 0.03);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 32px 20px 48px;
+        font-family: system-ui, sans-serif;
+        background: var(--namanie-bg);
+        color: var(--namanie-ink);
+        line-height: 1.6;
+      }
+
+      .page-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0 0 8px;
+        letter-spacing: 0.02em;
+      }
+
+      .lead {
+        font-size: 0.875rem;
+        color: var(--namanie-dim);
+        max-width: 720px;
+        margin: 0 0 24px;
+      }
+
+      .note {
+        font-size: 0.8125rem;
+        background: #fff;
+        border: 1px solid var(--namanie-border);
+        border-radius: 8px;
+        padding: 14px 16px;
+        max-width: 720px;
+        margin-bottom: 28px;
+        color: rgba(17, 17, 17, 0.75);
+      }
+
+      .note strong {
+        color: var(--namanie-ink);
+      }
+
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 32px;
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+
+      @media (min-width: 900px) {
+        .compare {
+          grid-template-columns: 1fr 1fr;
+          gap: 28px;
+          align-items: start;
+        }
+      }
+
+      .panel {
+        background: #fff;
+        border: 1px solid var(--namanie-border);
+        border-radius: 10px;
+        padding: 20px 18px 22px;
+        box-shadow: 0 1px 0 rgba(17, 17, 17, 0.04);
+      }
+
+      .panel h2 {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--namanie-dim);
+        margin: 0 0 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--namanie-border);
+      }
+
+      /* 記事本文ラッパー（実サイトの .article-body に相当） */
+      .article-body {
+        font-family: "Noto Serif JP", serif;
+        font-size: 15px;
+        line-height: 2.4;
+        color: rgba(17, 17, 17, 0.8);
+        max-width: 640px;
+      }
+
+      /* ----- globals.css 現行：先頭 p のドロップキャップ（blockquote 内にも波及） ----- */
+      .article-body p:first-of-type::first-letter {
+        font-size: 3.5em;
+        float: left;
+        margin-right: 0.35rem;
+        margin-top: 0.15rem;
+        line-height: 0.85;
+        color: var(--namanie-red);
+        font-weight: 900;
+      }
+
+      @media (max-width: 767px) {
+        .article-body p:first-of-type::first-letter {
+          font-size: 2.25em;
+        }
+      }
+
+      /* ----- 現行 blockquote（ArticleBody の Tailwind 相当） ----- */
+      blockquote.current {
+        margin: 2rem 0;
+        padding: 1.5rem 0 1.5rem 1.75rem;
+        border-left: 2px solid var(--namanie-red);
+        font-style: italic;
+        font-size: 0.875rem;
+        line-height: 2.2;
+        color: rgba(17, 17, 17, 0.55);
+      }
+
+      blockquote.current p {
+        margin: 0 0 0.75rem;
+      }
+
+      blockquote.current p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* ----- 改善案 blockquote ----- */
+      blockquote.proposed {
+        margin: 2rem 0;
+        padding: 1.35rem 1.25rem 1.35rem 1.35rem;
+        border-left: 3px solid rgba(17, 17, 17, 0.12);
+        border-radius: 0 8px 8px 0;
+        background: linear-gradient(
+          90deg,
+          var(--namanie-toc-bg) 0%,
+          rgba(17, 17, 17, 0.02) 40%,
+          rgba(17, 17, 17, 0.02) 100%
+        );
+        font-style: normal;
+        font-size: 0.9375rem;
+        line-height: 2.25;
+        color: rgba(17, 17, 17, 0.88);
+      }
+
+      /* 引用内ではドロップキャップをやめる（実装時は globals で上書き推奨） */
+      blockquote.proposed p:first-of-type::first-letter {
+        float: none;
+        margin: 0;
+        font-size: inherit;
+        line-height: inherit;
+        font-weight: inherit;
+        color: inherit;
+      }
+
+      blockquote.proposed p {
+        margin: 0 0 0.75rem;
+      }
+
+      blockquote.proposed p:last-child {
+        margin-bottom: 0;
+      }
+
+      .attrib {
+        display: block;
+        margin-top: 0.85rem;
+        font-size: 0.8125rem;
+        color: var(--namanie-dim);
+        font-style: normal;
+      }
+
+      .checklist {
+        font-size: 0.8125rem;
+        margin-top: 36px;
+        padding-top: 20px;
+        border-top: 1px solid var(--namanie-border);
+        max-width: 1120px;
+        margin-left: auto;
+        margin-right: auto;
+        color: rgba(17, 17, 17, 0.65);
+      }
+
+      .checklist ul {
+        margin: 8px 0 0;
+        padding-left: 1.25rem;
+      }
+
+      .checklist li {
+        margin-bottom: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="page-title">引用ブロック：現行と改善案の比較</h1>
+    <p class="lead">
+      レビュー用サンプル（静的 HTML）。トークンとサイズ感はサイトの N3 記事本文に寄せています。
+    </p>
+
+    <div class="note">
+      <strong>現行で「引用の冒頭だけ赤字・特大」になる理由：</strong>
+      <code style="font-size: 0.75em">globals.css</code> の
+      <code style="font-size: 0.75em">.article-body p:first-of-type::first-letter</code>
+      は「直下の p」だけでなく、
+      <strong>blockquote 内の先頭 p</strong>にもマッチします（親が違っても「その親の子のうち最初の
+      p」が対象になるため）。改善案パネルでは引用ブロック内だけドロップキャップをリセットしています。
+    </div>
+
+    <div class="compare">
+      <section class="panel" aria-labelledby="label-current">
+        <h2 id="label-current">現行（サイト相当）</h2>
+        <div class="article-body">
+          <blockquote class="current" cite="#">
+            <p>
+              <strong>概要</strong><br />
+              トー横キッズ（トーよこキッズ）とは、東京都新宿区歌舞伎町の新宿東宝ビル周辺の路地裏に集まる若者や学生たちによるコミュニティのことである。
+            </p>
+            <p>
+              歌舞伎町炎上。死者数不明。犯人は10代の女性。結末はもう、知っての通り。あなたは知りたい？どうして私が火をつけたのか。
+            </p>
+            <span class="attrib">――映画の予告より（サンプル）</span>
+          </blockquote>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="label-proposed">
+        <h2 id="label-proposed">改善案（ご提案どおりの方向性）</h2>
+        <div class="article-body">
+          <blockquote class="proposed" cite="#">
+            <p>
+              <strong>概要</strong><br />
+              トー横キッズ（トーよこキッズ）とは、東京都新宿区歌舞伎町の新宿東宝ビル周辺の路地裏に集まる若者や学生たちによるコミュニティのことである。
+            </p>
+            <p>
+              歌舞伎町炎上。死者数不明。犯人は10代の女性。結末はもう、知っての通り。あなたは知りたい？どうして私が火をつけたのか。
+            </p>
+            <span class="attrib">――映画の予告より（サンプル）</span>
+          </blockquote>
+        </div>
+      </section>
+    </div>
+
+    <section class="checklist">
+      <strong>改善案で反映しているポイント</strong>
+      <ul>
+        <li>引用の冒頭の赤字・拡大（ドロップキャップ）をやめる（blockquote 内のみリセット）</li>
+        <li>イタリックをやめる（正立・読みやすさ優先）</li>
+        <li>文字色をやや濃くし、背景にごく薄いグラデーションを敷いて「引用の箱」として区別</li>
+        <li>左アクセントは赤からニュートラル寄りの線に変更（本文との緊張感は残しつつ、煽り感を弱める）</li>
+      </ul>
+      <p style="margin-top: 12px; font-size: 0.78rem; color: var(--namanie-dim)">
+        実装時は <code>ArticleBody</code> の blockquote 用クラスと <code>globals.css</code> の
+        <code>p:first-of-type::first-letter</code> のスコープ見直し（例：
+        <code>.article-body &gt; p:first-of-type</code> に限定）をセットで検討すると安全です。
+      </p>
+    </section>
+  </body>
+</html>
