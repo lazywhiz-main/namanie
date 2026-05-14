@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>記事一覧・詳細 — 関連記事クラスタ UI モック</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-page: #e8e8e4;
+        --bg-screen: #fafaf8;
+        --ink: #111;
+        --red: #b91c1c;
+        --dim: rgba(17, 17, 17, 0.35);
+        --border: rgba(17, 17, 17, 0.07);
+        --toc-bg: rgba(17, 17, 17, 0.03);
+        --current-bg: rgba(185, 28, 28, 0.07);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg-page);
+        color: var(--ink);
+        line-height: 1.6;
+      }
+
+      .doc {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 28px 20px 20px;
+      }
+
+      .doc h1 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin: 0 0 10px;
+        letter-spacing: 0.02em;
+      }
+
+      .doc .lead {
+        font-size: 0.875rem;
+        color: rgba(17, 17, 17, 0.55);
+        margin: 0 0 18px;
+      }
+
+      .note {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 28px;
+        font-size: 0.8125rem;
+        color: rgba(17, 17, 17, 0.82);
+      }
+
+      .note h2 {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--dim);
+        margin: 0 0 10px;
+      }
+
+      .note p {
+        margin: 0 0 8px;
+      }
+
+      .note p:last-child {
+        margin-bottom: 0;
+      }
+
+      .note code {
+        font-size: 0.78em;
+      }
+
+      .screen-wrap {
+        max-width: 900px;
+        margin: 0 auto 44px;
+        padding: 0 16px;
+      }
+
+      .screen-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: rgba(17, 17, 17, 0.45);
+        margin: 0 0 10px;
+        text-align: center;
+      }
+
+      .screen {
+        background: var(--bg-screen);
+        border-radius: 14px;
+        border: 1px solid rgba(17, 17, 17, 0.08);
+        box-shadow: 0 12px 40px rgba(17, 17, 17, 0.06);
+        overflow: hidden;
+      }
+
+      .screen-inner {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 36px 20px 40px;
+      }
+
+      @media (min-width: 768px) {
+        .screen-inner {
+          padding: 48px 40px 56px;
+        }
+      }
+
+      .path {
+        font-size: 11px;
+        color: var(--dim);
+        margin: 0 0 18px;
+      }
+
+      /* ----- 一覧・詳細で共通：1コンポーネント ----- */
+      .article-cluster {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.72);
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+
+      .article-cluster__root {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: baseline;
+        padding: 14px 14px 12px;
+        background: linear-gradient(90deg, var(--toc-bg) 0%, rgba(17, 17, 17, 0.02) 100%);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .article-cluster__root.is-current {
+        background: var(--current-bg);
+        box-shadow: inset 3px 0 0 var(--red);
+      }
+
+      .article-cluster__list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .article-cluster__item {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: baseline;
+        padding: 12px 14px 12px 26px;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+      }
+
+      .article-cluster__item:last-child {
+        border-bottom: none;
+      }
+
+      .article-cluster__item::before {
+        content: "";
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: rgba(185, 28, 28, 0.22);
+        border-radius: 0 2px 2px 0;
+      }
+
+      .article-cluster__item.is-current {
+        background: var(--current-bg);
+      }
+
+      .article-cluster__item.is-current::before {
+        width: 3px;
+        left: 9px;
+        background: var(--red);
+      }
+
+      .article-cluster__title {
+        font-family: "Noto Serif JP", serif;
+        font-size: 14px;
+        font-weight: 600;
+        flex: 1 1 200px;
+        line-height: 1.45;
+        color: rgba(17, 17, 17, 0.92);
+      }
+
+      .article-cluster__title a {
+        color: inherit;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+      }
+
+      .article-cluster__title a:hover {
+        color: var(--red);
+        border-bottom-color: rgba(185, 28, 28, 0.35);
+      }
+
+      .article-cluster__meta {
+        font-size: 11px;
+        color: var(--dim);
+        flex-shrink: 0;
+      }
+
+      .article-cluster__here {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--red);
+        flex-shrink: 0;
+      }
+
+      /* フラット1行（クラスタに属さない記事） */
+      .article-flat {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 13px;
+      }
+
+      .article-flat__row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: baseline;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .article-flat__title {
+        font-family: "Noto Serif JP", serif;
+        font-weight: 600;
+        flex: 1 1 200px;
+        color: rgba(17, 17, 17, 0.9);
+      }
+
+      .article-flat__title a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .article-flat__title a:hover {
+        color: var(--red);
+      }
+
+      .article-flat__meta {
+        font-size: 11px;
+        color: var(--dim);
+      }
+
+      .legend {
+        margin: 0;
+        padding: 14px 18px 16px;
+        font-size: 11px;
+        color: rgba(17, 17, 17, 0.65);
+        background: rgba(255, 255, 255, 0.55);
+        border-top: 1px solid var(--border);
+        line-height: 1.55;
+      }
+
+      .legend strong {
+        display: block;
+        font-size: 10px;
+        color: var(--dim);
+        letter-spacing: 0.1em;
+        margin-bottom: 6px;
+      }
+
+      /* ----- 記事詳細ページの骨格 ----- */
+      .back {
+        display: inline-flex;
+        align-items: center;
+        font-size: 11px;
+        color: var(--red);
+        text-decoration: none;
+        margin-bottom: 1.75rem;
+        min-height: 44px;
+      }
+
+      .back:hover {
+        text-decoration: underline;
+      }
+
+      h1.article-title {
+        font-family: "Noto Serif JP", serif;
+        font-size: 1.5rem;
+        line-height: 1.5;
+        font-weight: 900;
+        margin: 0 0 1rem;
+      }
+
+      @media (min-width: 768px) {
+        h1.article-title {
+          font-size: 2rem;
+          line-height: 1.6;
+        }
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 1rem;
+        font-size: 11px;
+        color: var(--dim);
+        padding-bottom: 1.25rem;
+        margin-bottom: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .article-body {
+        font-family: "Noto Serif JP", serif;
+        font-size: 14px;
+        line-height: 2.2;
+        color: rgba(17, 17, 17, 0.82);
+        margin-top: 1.75rem;
+      }
+
+      .article-body p {
+        margin: 0 0 1.1rem;
+      }
+
+      .footer-nav {
+        margin-top: 2rem;
+        font-size: 11px;
+      }
+
+      .footer-nav a {
+        color: var(--red);
+        text-decoration: none;
+      }
+
+      .compare {
+        display: grid;
+        gap: 20px;
+        margin-top: 8px;
+      }
+
+      @media (min-width: 860px) {
+        .compare {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .compare h3 {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: rgba(17, 17, 17, 0.45);
+        margin: 0 0 10px;
+      }
+
+      .doc-footer {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 0 20px 36px;
+        font-size: 0.78rem;
+        color: var(--dim);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="doc">
+      <h1>記事一覧・詳細 — 関連記事クラスタ UI モック</h1>
+      <p class="lead">
+        画面上は<strong>階層とインデントだけ</strong>で塊を表し、一覧ページと記事詳細で<strong>同じマークアップ・同じ見た目</strong>のブロックを使います。データ上の親子や
+        <code>parent_slug</code> などの話は、下の設計メモに閉じます。
+      </p>
+
+      <div class="note" id="design-note">
+        <h2>設計メモ（画面には出さない）</h2>
+        <p>
+          先頭行＝塊の入り口となる記事、インデントした行＝その記事にぶら下がる関連稿、というモデルで実装できます。詳細ページでは「この記事と同じ塊の一覧」をそのまま出し、
+          <code>aria-current="page"</code> 相当の行に <code>.is-current</code> を付けて背景と左線を強めます。
+        </p>
+        <p>
+          配置の目安：<strong>文頭</strong>にこのブロックがあると、流入直後に塊の文脈が掴めます。<strong>文末</strong>にも同じブロックを置くと読了後の移動に便利です。両方とも同一コンポーネントでよく、文言や別パターンのリボンは不要です。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap" id="list">
+      <p class="screen-label">記事一覧：クラスタ＋フラット行</p>
+      <div class="screen">
+        <div class="screen-inner" style="padding-top: 28px">
+          <p class="path">/articles</p>
+
+          <div class="article-cluster" role="navigation" aria-label="関連する記事">
+            <div class="article-cluster__root">
+              <span class="article-cluster__title"
+                ><a href="#">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</a></span
+              >
+              <span class="article-cluster__meta">2026.04.16 · 鈴木</span>
+            </div>
+            <ul class="article-cluster__list">
+              <li class="article-cluster__item">
+                <span class="article-cluster__title"
+                  ><a href="#">暴走AI物語を反復するAIに興奮しちゃう</a></span
+                >
+                <span class="article-cluster__meta">2026.05.14</span>
+              </li>
+              <li class="article-cluster__item">
+                <span class="article-cluster__title"
+                  ><a href="#">機械カニバリズムのあとに何が残るか</a></span
+                >
+                <span class="article-cluster__meta">2026.06.01</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="path" style="margin-top: 8px; margin-bottom: 12px">他の記事</p>
+          <ul class="article-flat">
+            <li class="article-flat__row">
+              <span class="article-flat__title"
+                ><a href="#">トー横も、分岐点を迎えているのかもしれない。</a></span
+              >
+              <span class="article-flat__meta">2026.04.29</span>
+            </li>
+          </ul>
+        </div>
+        <p class="legend">
+          <strong>一覧での読み方</strong>
+          角丸の枠の中が1塊。先頭行の直下だけ、左線付きでインデントします。塊に属さない記事は下のフラット行のとおり、枠なしで並べます。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap" id="detail">
+      <p class="screen-label">記事詳細：一覧と同じクラスタ（子記事を開いている例）</p>
+      <div class="screen">
+        <div class="screen-inner">
+          <a class="back" href="#">← 戻る</a>
+
+          <div class="article-cluster" role="navigation" aria-label="この記事の前後関係">
+            <div class="article-cluster__root">
+              <span class="article-cluster__title"
+                ><a href="#">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</a></span
+              >
+              <span class="article-cluster__meta">2026.04.16 · 鈴木</span>
+            </div>
+            <ul class="article-cluster__list">
+              <li class="article-cluster__item is-current">
+                <span class="article-cluster__title"
+                  ><a href="#" aria-current="page">暴走AI物語を反復するAIに興奮しちゃう</a></span
+                >
+                <span class="article-cluster__meta">2026.05.14</span>
+                <span class="article-cluster__here">表示中</span>
+              </li>
+              <li class="article-cluster__item">
+                <span class="article-cluster__title"
+                  ><a href="#">機械カニバリズムのあとに何が残るか</a></span
+                >
+                <span class="article-cluster__meta">2026.06.01</span>
+              </li>
+            </ul>
+          </div>
+
+          <h1 class="article-title">暴走AI物語を反復するAIに興奮しちゃう</h1>
+          <div class="meta">
+            <span>鈴木</span>
+            <span>2026.05.14</span>
+          </div>
+
+          <div class="article-body">
+            <p>本文ダミー。上のブロックは一覧ページと同じ HTML クラスで組んでいます。</p>
+          </div>
+
+          <p class="footer-nav"><a href="#">← 記事一覧</a></p>
+        </div>
+        <p class="legend">
+          <strong>詳細での原則</strong>
+          一覧のクラスタをそのまま貼るだけにします。タイトル直上の別デザインのリボンや、別コンポーネントの「関連」カードは置きません。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <p class="screen-label">記事詳細：入り口の記事を開いている例（先頭行が表示中）</p>
+      <div class="screen">
+        <div class="screen-inner">
+          <a class="back" href="#">← 戻る</a>
+
+          <div class="article-cluster" role="navigation" aria-label="この記事の前後関係">
+            <div class="article-cluster__root is-current">
+              <span class="article-cluster__title"
+                ><a href="#" aria-current="page">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</a></span
+              >
+              <span class="article-cluster__meta">2026.04.16 · 鈴木</span>
+              <span class="article-cluster__here">表示中</span>
+            </div>
+            <ul class="article-cluster__list">
+              <li class="article-cluster__item">
+                <span class="article-cluster__title"
+                  ><a href="#">暴走AI物語を反復するAIに興奮しちゃう</a></span
+                >
+                <span class="article-cluster__meta">2026.05.14</span>
+              </li>
+              <li class="article-cluster__item">
+                <span class="article-cluster__title"
+                  ><a href="#">機械カニバリズムのあとに何が残るか</a></span
+                >
+                <span class="article-cluster__meta">2026.06.01</span>
+              </li>
+            </ul>
+          </div>
+
+          <h1 class="article-title">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</h1>
+          <div class="meta">
+            <span>鈴木</span>
+            <span>2026.04.16</span>
+          </div>
+
+          <div class="article-body">
+            <p>先頭行に <code>.is-current</code> を付けた場合。左のアクセントは先頭行用にインセットのボックスシャドウで表現しています。</p>
+          </div>
+
+          <p class="footer-nav"><a href="#">← 記事一覧</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap" id="placement">
+      <p class="screen-label">文末にも同じブロックを置く場合（一覧と同一 UI）</p>
+      <div class="screen">
+        <div class="screen-inner">
+          <div class="compare">
+            <div>
+              <h3>文頭（この列は上の詳細モックと同じ）</h3>
+              <div class="article-cluster" role="navigation" aria-label="文頭">
+                <div class="article-cluster__root">
+                  <span class="article-cluster__title"
+                    ><a href="#">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</a></span
+                  >
+                  <span class="article-cluster__meta">2026.04.16</span>
+                </div>
+                <ul class="article-cluster__list">
+                  <li class="article-cluster__item is-current">
+                    <span class="article-cluster__title"
+                      ><a href="#" aria-current="page">暴走AI物語を反復するAIに興奮しちゃう</a></span
+                    >
+                    <span class="article-cluster__meta">2026.05.14</span>
+                    <span class="article-cluster__here">表示中</span>
+                  </li>
+                  <li class="article-cluster__item">
+                    <span class="article-cluster__title"
+                      ><a href="#">機械カニバリズムのあとに何が残るか</a></span
+                    >
+                    <span class="article-cluster__meta">2026.06.01</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div>
+              <h3>文末（マークアップもクラスも文頭と同一）</h3>
+              <div class="article-cluster" role="navigation" aria-label="文末">
+                <div class="article-cluster__root">
+                  <span class="article-cluster__title"
+                    ><a href="#">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</a></span
+                  >
+                  <span class="article-cluster__meta">2026.04.16</span>
+                </div>
+                <ul class="article-cluster__list">
+                  <li class="article-cluster__item is-current">
+                    <span class="article-cluster__title"
+                      ><a href="#" aria-current="page">暴走AI物語を反復するAIに興奮しちゃう</a></span
+                    >
+                    <span class="article-cluster__meta">2026.05.14</span>
+                    <span class="article-cluster__here">表示中</span>
+                  </li>
+                  <li class="article-cluster__item">
+                    <span class="article-cluster__title"
+                      ><a href="#">機械カニバリズムのあとに何が残るか</a></span
+                    >
+                    <span class="article-cluster__meta">2026.06.01</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <p class="path" style="margin-top: 16px; margin-bottom: 0">
+            実装ではコンポーネントを1つにまとめ、文頭・文末に同じものを差し込むだけにできます。重複が気になる場合は文末だけ省略する、などの運用は別途決めれば足ります。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p class="doc-footer">
+      <code>docs/article-cluster-hierarchy-ui.html</code> — 旧モック
+      <code>docs/article-series-ui-review.html</code> は参照用に残していますが、本線はこのファイルを起点にしてください。
+    </p>
+  </body>
+</html>

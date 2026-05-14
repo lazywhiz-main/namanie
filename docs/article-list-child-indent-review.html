@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>記事一覧 — 子行のインデント・番号 デザイン検討</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --namanie-bg: #fafaf8;
+        --namanie-ink: #111;
+        --namanie-red: #b91c1c;
+        --namanie-dim: rgba(17, 17, 17, 0.35);
+        --namanie-border: rgba(17, 17, 17, 0.07);
+        --namanie-toc-bg: rgba(17, 17, 17, 0.03);
+        --page-bg: #e8e8e4;
+        --child-line: rgba(185, 28, 28, 0.22);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--page-bg);
+        color: var(--namanie-ink);
+        line-height: 1.55;
+      }
+
+      .doc {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 28px 18px 12px;
+      }
+
+      .doc h1 {
+        font-size: 1.3rem;
+        font-weight: 800;
+        margin: 0 0 10px;
+      }
+
+      .doc .lead {
+        font-size: 0.875rem;
+        color: rgba(17, 17, 17, 0.55);
+        margin: 0 0 16px;
+      }
+
+      .proposal {
+        background: #fff;
+        border: 1px solid var(--namanie-border);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 22px;
+        font-size: 0.8125rem;
+        color: rgba(17, 17, 17, 0.82);
+      }
+
+      .proposal h2 {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--namanie-dim);
+        margin: 0 0 10px;
+      }
+
+      .proposal ul {
+        margin: 8px 0 0;
+        padding-left: 1.15rem;
+      }
+
+      .proposal li {
+        margin-bottom: 6px;
+      }
+
+      .screen-wrap {
+        max-width: 900px;
+        margin: 0 auto 40px;
+        padding: 0 14px;
+      }
+
+      .screen-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: rgba(17, 17, 17, 0.45);
+        margin: 0 0 8px;
+        text-align: center;
+      }
+
+      .screen {
+        background: var(--namanie-bg);
+        border-radius: 14px;
+        border: 1px solid rgba(17, 17, 17, 0.08);
+        box-shadow: 0 10px 36px rgba(17, 17, 17, 0.06);
+        overflow: hidden;
+      }
+
+      .screen-inner {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 28px 20px 32px;
+        position: relative;
+      }
+
+      /* 一覧左端の基準線（子がどれだけ右にずれたか比較用） */
+      .screen-inner::before {
+        content: "";
+        position: absolute;
+        left: 20px;
+        top: 24px;
+        bottom: 24px;
+        width: 1px;
+        background: rgba(185, 28, 28, 0.12);
+        pointer-events: none;
+      }
+
+      @media (min-width: 768px) {
+        .screen-inner {
+          padding: 36px 40px 40px;
+        }
+        .screen-inner::before {
+          left: 40px;
+        }
+      }
+
+      .caption {
+        font-size: 10px;
+        color: var(--namanie-dim);
+        margin: 0 0 14px;
+        padding: 0 4px;
+      }
+
+      /* ----- 共通：親行（フラット行と同型） ----- */
+      .row-parent {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        gap: 16px 16px;
+        align-items: baseline;
+        padding: 22px 0;
+        border-bottom: 1px solid var(--namanie-border);
+        text-decoration: none;
+        color: inherit;
+      }
+
+      @media (min-width: 768px) {
+        .row-parent {
+          grid-template-columns: 60px 1fr auto;
+          gap: 40px 16px;
+        }
+      }
+
+      .row-num {
+        font-family: "Noto Serif JP", serif;
+        font-size: 12px;
+        font-weight: 300;
+        color: var(--namanie-dim);
+      }
+
+      .row-title {
+        font-family: "Noto Serif JP", serif;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.55;
+      }
+
+      @media (min-width: 768px) {
+        .row-title {
+          font-size: 19px;
+          line-height: 1.65;
+        }
+      }
+
+      .row-meta {
+        grid-column: 2;
+        text-align: right;
+        font-size: 11px;
+        color: var(--namanie-dim);
+        line-height: 1.5;
+      }
+
+      @media (min-width: 768px) {
+        .row-meta {
+          grid-column: 3;
+          grid-row: 1;
+        }
+      }
+
+      /* ----- 子行ベース（グリッドは親と同じ列幅） ----- */
+      .row-child {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        gap: 16px 16px;
+        align-items: baseline;
+        padding: 22px 0;
+        border-bottom: 1px solid var(--namanie-border);
+        text-decoration: none;
+        color: inherit;
+      }
+
+      @media (min-width: 768px) {
+        .row-child {
+          grid-template-columns: 60px 1fr auto;
+          gap: 40px 16px;
+        }
+      }
+
+      .row-child .row-meta {
+        grid-column: 2;
+      }
+
+      @media (min-width: 768px) {
+        .row-child .row-meta {
+          grid-column: 3;
+          grid-row: 1;
+        }
+      }
+
+      .child-line-cell {
+        position: relative;
+        min-height: 1.25em;
+        border-left: 2px solid var(--child-line);
+        padding-left: 8px;
+        margin-left: 2px;
+      }
+
+      .legend {
+        margin: 0;
+        padding: 12px 16px 14px;
+        font-size: 11px;
+        color: rgba(17, 17, 17, 0.62);
+        background: rgba(255, 255, 255, 0.55);
+        border-top: 1px solid var(--namanie-border);
+        line-height: 1.55;
+      }
+
+      .legend strong {
+        display: block;
+        font-size: 10px;
+        color: var(--namanie-dim);
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+      }
+
+      /* ===== 案 A：現状に近い（1列目左線＋タイトル列だけやや pl） ===== */
+      .v-a .row-child .row-title {
+        padding-left: 6px;
+      }
+
+      @media (min-width: 768px) {
+        .v-a .row-child .row-title {
+          padding-left: 10px;
+        }
+      }
+
+      /* ===== 案 B：行ボックスごと右へずらす（一覧左端より明確に奥） ===== */
+      .v-b .row-child {
+        margin-left: 12px;
+        padding-left: 4px;
+        border-left: 1px solid rgba(17, 17, 17, 0.06);
+      }
+
+      @media (min-width: 768px) {
+        .v-b .row-child {
+          margin-left: 20px;
+          padding-left: 8px;
+        }
+      }
+
+      .v-b .row-child .row-title {
+        padding-left: 4px;
+      }
+
+      /* ===== 案 C：B ＋ 子タイトルを一段小さく（階層の空気だけ） ===== */
+      .v-c .row-child {
+        margin-left: 12px;
+        padding-left: 4px;
+        border-left: 1px solid rgba(17, 17, 17, 0.06);
+      }
+
+      @media (min-width: 768px) {
+        .v-c .row-child {
+          margin-left: 20px;
+          padding-left: 8px;
+        }
+      }
+
+      .v-c .row-child .row-title {
+        font-size: 14px;
+        font-weight: 600;
+        padding-left: 4px;
+        color: rgba(17, 17, 17, 0.88);
+      }
+
+      @media (min-width: 768px) {
+        .v-c .row-child .row-title {
+          font-size: 17px;
+        }
+      }
+
+      /* ===== 案 D：番号列を「01-1」「01-2」（親番号の派生） ===== */
+      .v-d .row-child .row-num {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: rgba(17, 17, 17, 0.42);
+        padding-top: 2px;
+      }
+
+      .v-d .row-child .row-num span {
+        color: var(--namanie-red);
+        font-weight: 700;
+        opacity: 0.85;
+      }
+
+      .v-d .row-child .row-title {
+        padding-left: 4px;
+      }
+
+      /* ===== 案 E：番号列は空けて「·」だけ＋行スライド小 ===== */
+      .v-e .row-child {
+        margin-left: 8px;
+      }
+
+      @media (min-width: 768px) {
+        .v-e .row-child {
+          margin-left: 14px;
+        }
+      }
+
+      .v-e .row-child .row-num {
+        font-size: 18px;
+        font-weight: 300;
+        color: rgba(17, 17, 17, 0.2);
+        text-align: center;
+        line-height: 1;
+      }
+
+      .v-e .row-child .row-title {
+        padding-left: 2px;
+      }
+
+      /* ===== 案 F：番号列に小さな丸数字（①②風・実装は別手段でも可） ===== */
+      .v-f .row-child {
+        margin-left: 10px;
+      }
+
+      .v-f .pill-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--namanie-red);
+        border: 1px solid rgba(185, 28, 28, 0.35);
+        background: rgba(185, 28, 28, 0.06);
+      }
+
+      .v-f .row-child .row-title {
+        padding-left: 4px;
+      }
+
+      .doc-footer {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 18px 36px;
+        font-size: 0.75rem;
+        color: var(--namanie-dim);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="doc">
+      <h1>記事一覧 — 子行の見え方（インデント／番号）検討</h1>
+      <p class="lead">
+        親行は他記事と<strong>同じ左端・同じ番号列</strong>のまま、<strong>子行だけ</strong>が「塊の内側」にいることが一目で分かる案を並べています。各ブロック左のうっすら赤の縦線は、<strong>一覧コンテンツの左基準</strong>です（子がどれだけ右に出たかの比較用）。
+      </p>
+      <div class="proposal">
+        <h2>検討メモ</h2>
+        <ul>
+          <li>
+            <strong>行全体の margin</strong>（案 B/C）：番号列ごと右へずれるので、「一覧全体の数字の縦ライン」から子だけ外れる。最も直感的かもしれません。
+          </li>
+          <li>
+            <strong>番号の派生</strong>（案 D）：親が <code>01</code> のとき子を <code>01-1</code> などにすると、スクロールしても親子の対応が追いやすいです。実装では桁幅のブレに注意。
+          </li>
+          <li>
+            <strong>番号列を弱い記号にする</strong>（案 E）：親と同じ列を「空けて ·」にすると、子であることは伝わるが<strong>順序の強さは弱い</strong>です。
+          </li>
+          <li>
+            <strong>丸チップ</strong>（案 F）：目立つが装飾感が強い。1 塊に子が少ないとき向き。
+          </li>
+          <li>
+            <strong>案 A</strong>は現行に近い「左線＋タイトル列だけ pl」です。差が弱い場合は B か D を足すのが無難です。
+          </li>
+        </ul>
+        <p style="margin: 10px 0 0">
+          <strong>推奨の組み合わせ案</strong>：まず <strong>B（行の margin-left 12〜20px）</strong>を入れて様子を見る。足りなければ <strong>D（01-1）</strong>を重ねる、または <strong>C（一段小さいタイトル）</strong>で階層だけ足す。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <p class="screen-label">案 A — 左線セル＋タイトル列のみやや右（現状に近い）</p>
+      <div class="screen v-a">
+        <div class="screen-inner">
+          <p class="caption">単独行のあとに塊。赤い縦線＝一覧左基準。</p>
+          <a class="row-parent" href="#">
+            <span class="row-num">01</span>
+            <span class="row-title">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</span>
+            <span class="row-meta">2026.04.16<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num"><span class="child-line-cell" aria-hidden="true"></span></span>
+            <span class="row-title">暴走AI物語を反復するAIに興奮しちゃう</span>
+            <span class="row-meta">2026.05.14<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num"><span class="child-line-cell" aria-hidden="true"></span></span>
+            <span class="row-title">機械カニバリズムのあとに何が残るか（ダミー）</span>
+            <span class="row-meta">2026.06.01<br />鈴木</span>
+          </a>
+          <a class="row-parent" href="#">
+            <span class="row-num">02</span>
+            <span class="row-title">トー横も、分岐点を迎えているのかもしれない。</span>
+            <span class="row-meta">2026.04.29<br />齋藤</span>
+          </a>
+        </div>
+        <p class="legend">
+          <strong>案 A</strong>
+          親と子で番号列の左端は揃う。差は主にタイトル開始位置の数 px。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <p class="screen-label">案 B — 子行だけボックスを右へ（margin ＋極薄左縁）</p>
+      <div class="screen v-b">
+        <div class="screen-inner">
+          <p class="caption">子のグリッド全体が基準線より右。番号も一緒にずれる。</p>
+          <a class="row-parent" href="#">
+            <span class="row-num">01</span>
+            <span class="row-title">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</span>
+            <span class="row-meta">2026.04.16<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num"><span class="child-line-cell"></span></span>
+            <span class="row-title">暴走AI物語を反復するAIに興奮しちゃう</span>
+            <span class="row-meta">2026.05.14<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num"><span class="child-line-cell"></span></span>
+            <span class="row-title">機械カニバリズムのあとに何が残るか（ダミー）</span>
+            <span class="row-meta">2026.06.01<br />鈴木</span>
+          </a>
+          <a class="row-parent" href="#">
+            <span class="row-num">02</span>
+            <span class="row-title">トー横も、分岐点を迎えているのかもしれない。</span>
+            <span class="row-meta">2026.04.29<br />齋藤</span>
+          </a>
+        </div>
+        <p class="legend">
+          <strong>案 B</strong>
+          フラット行の番号縦ラインと子の番号縦ラインが<strong>ずれる</strong>ので、「子は内側」が一番読みやすいタイプです。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <p class="screen-label">案 C — 案 B ＋ 子タイトルを一段小さく</p>
+      <div class="screen v-c">
+        <div class="screen-inner">
+          <a class="row-parent" href="#">
+            <span class="row-num">01</span>
+            <span class="row-title">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</span>
+            <span class="row-meta">2026.04.16<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num"><span class="child-line-cell"></span></span>
+            <span class="row-title">暴走AI物語を反復するAIに興奮しちゃう</span>
+            <span class="row-meta">2026.05.14<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num"><span class="child-line-cell"></span></span>
+            <span class="row-title">機械カニバリズムのあとに何が残るか（ダミー）</span>
+            <span class="row-meta">2026.06.01<br />鈴木</span>
+          </a>
+          <a class="row-parent" href="#">
+            <span class="row-num">02</span>
+            <span class="row-title">トー横も、分岐点を迎えているのかもしれない。</span>
+            <span class="row-meta">2026.04.29<br />齋藤</span>
+          </a>
+        </div>
+        <p class="legend">
+          <strong>案 C</strong>
+          インデントに加え<strong>字サイズ</strong>で階層を足す案。派手すぎないが、長タイトルが続くと差が弱く感じることもあります。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <p class="screen-label">案 D — 番号列を 01-1 / 01-2（親番号の派生）</p>
+      <div class="screen v-d">
+        <div class="screen-inner">
+          <a class="row-parent" href="#">
+            <span class="row-num">01</span>
+            <span class="row-title">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</span>
+            <span class="row-meta">2026.04.16<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num">01<span>-1</span></span>
+            <span class="row-title">暴走AI物語を反復するAIに興奮しちゃう</span>
+            <span class="row-meta">2026.05.14<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num">01<span>-2</span></span>
+            <span class="row-title">機械カニバリズムのあとに何が残るか（ダミー）</span>
+            <span class="row-meta">2026.06.01<br />鈴木</span>
+          </a>
+          <a class="row-parent" href="#">
+            <span class="row-num">02</span>
+            <span class="row-title">トー横も、分岐点を迎えているのかもしれない。</span>
+            <span class="row-meta">2026.04.29<br />齋藤</span>
+          </a>
+        </div>
+        <p class="legend">
+          <strong>案 D</strong>
+          番号列だけで親子が分かる。<code>01a</code> 表記にすると欧文感が出るので、和文サイトなら <code>01-1</code> の方が無難なことが多いです。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <p class="screen-label">案 E — 番号列を「·」＋軽い行スライド</p>
+      <div class="screen v-e">
+        <div class="screen-inner">
+          <a class="row-parent" href="#">
+            <span class="row-num">01</span>
+            <span class="row-title">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</span>
+            <span class="row-meta">2026.04.16<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num">·</span>
+            <span class="row-title">暴走AI物語を反復するAIに興奮しちゃう</span>
+            <span class="row-meta">2026.05.14<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num">·</span>
+            <span class="row-title">機械カニバリズムのあとに何が残るか（ダミー）</span>
+            <span class="row-meta">2026.06.01<br />鈴木</span>
+          </a>
+          <a class="row-parent" href="#">
+            <span class="row-num">02</span>
+            <span class="row-title">トー横も、分岐点を迎えているのかもしれない。</span>
+            <span class="row-meta">2026.04.29<br />齋藤</span>
+          </a>
+        </div>
+        <p class="legend">
+          <strong>案 E</strong>
+          ミニマル。子の順序を番号で読みたい場合は D や F の方が強いです。
+        </p>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <p class="screen-label">案 F — 番号列に小さな丸ラベル（1 / 2）</p>
+      <div class="screen v-f">
+        <div class="screen-inner">
+          <a class="row-parent" href="#">
+            <span class="row-num">01</span>
+            <span class="row-title">「AIにはできないこと」を語るの飽きたから、もっと楽しいこと考えよう！</span>
+            <span class="row-meta">2026.04.16<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num"><span class="pill-num">1</span></span>
+            <span class="row-title">暴走AI物語を反復するAIに興奮しちゃう</span>
+            <span class="row-meta">2026.05.14<br />鈴木</span>
+          </a>
+          <a class="row-child" href="#">
+            <span class="row-num"><span class="pill-num">2</span></span>
+            <span class="row-title">機械カニバリズムのあとに何が残るか（ダミー）</span>
+            <span class="row-meta">2026.06.01<br />鈴木</span>
+          </a>
+          <a class="row-parent" href="#">
+            <span class="row-num">02</span>
+            <span class="row-title">トー横も、分岐点を迎えているのかもしれない。</span>
+            <span class="row-meta">2026.04.29<br />齋藤</span>
+          </a>
+        </div>
+        <p class="legend">
+          <strong>案 F</strong>
+          塊内の順序が一目で分かる。一覧のトーンが静かなサイトだとやや目立つので、子が多い塊だけ F にする、といった切り分けもありです。
+        </p>
+      </div>
+    </div>
+
+    <p class="doc-footer">
+      ファイル：<code>docs/article-list-child-indent-review.html</code> — ブラウザで開いて A〜F を比較してください。<br />
+      <strong>採用</strong>：案 C を本番の <code>ArticleIndentedRow</code>（<code>src/components/ArticleRow.tsx</code>）に反映済みです。
+    </p>
+  </body>
+</html>

@@ -14,6 +14,11 @@ export interface ArticleMeta {
   readMinutes?: number;
   /** 一覧用短い説明（任意） */
   excerpt?: string;
+  /**
+   * この記事がぶら下がる塊の入り口記事の slug。
+   * 未設定のときは単独、または他稿の parentSlug 先として塊の先頭行になる。
+   */
+  parentSlug?: string;
 }
 
 export interface Article {
@@ -21,7 +26,16 @@ export interface Article {
   content: string;
 }
 
+export type ArticleListEntry =
+  | { kind: "cluster"; hub: ArticleMeta; children: ArticleMeta[]; sortKey: string }
+  | { kind: "flat"; article: ArticleMeta; sortKey: string };
+
 const ARTICLES_DIR = path.join(process.cwd(), "content", "articles");
+
+function readParentSlug(data: Record<string, unknown>): string | undefined {
+  const v = data.parentSlug ?? data.parent_slug;
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
+}
 
 function getArticleFilePaths(): string[] {
   if (!fs.existsSync(ARTICLES_DIR)) return [];
@@ -92,6 +106,7 @@ export function getAllArticles(): ArticleMeta[] {
       date: data.date,
       readMinutes,
       excerpt: data.excerpt,
+      parentSlug: readParentSlug(data as Record<string, unknown>),
     });
   }
   articles.sort((a, b) => (b.date > a.date ? 1 : -1));
@@ -116,10 +131,78 @@ export function getArticleBySlug(slug: string): Article | null {
           date: data.date,
           readMinutes,
           excerpt: data.excerpt,
+          parentSlug: readParentSlug(data as Record<string, unknown>),
         },
         content,
       };
     }
   }
   return null;
+}
+
+function isChildInValidCluster(meta: ArticleMeta, bySlug: Map<string, ArticleMeta>): boolean {
+  return Boolean(meta.parentSlug && bySlug.has(meta.parentSlug));
+}
+
+function maxIsoDate(...dates: string[]): string {
+  return dates.reduce((a, b) => (a > b ? a : b));
+}
+
+/**
+ * 一覧・トップ用：親子塊は1クラスタ、それ以外はフラット1行。日付の新しい順。
+ */
+export function getArticleListEntries(): ArticleListEntry[] {
+  const articles = getAllArticles();
+  const bySlug = new Map(articles.map((a) => [a.slug, a]));
+  const consumed = new Set<string>();
+  const entries: ArticleListEntry[] = [];
+
+  for (const hub of articles) {
+    if (isChildInValidCluster(hub, bySlug)) continue;
+    const children = articles
+      .filter((c) => c.parentSlug === hub.slug)
+      .sort((a, b) => (b.date > a.date ? 1 : -1));
+    if (children.length === 0) continue;
+    consumed.add(hub.slug);
+    for (const c of children) consumed.add(c.slug);
+    const sortKey = maxIsoDate(hub.date, ...children.map((c) => c.date));
+    entries.push({ kind: "cluster", hub, children, sortKey });
+  }
+
+  for (const article of articles) {
+    if (consumed.has(article.slug)) continue;
+    entries.push({ kind: "flat", article, sortKey: article.date });
+  }
+
+  entries.sort((a, b) => (b.sortKey > a.sortKey ? 1 : -1));
+  return entries;
+}
+
+export type ArticleClusterData = {
+  hub: ArticleMeta;
+  children: ArticleMeta[];
+};
+
+/**
+ * 記事詳細用：slug が属する塊（入り口＋インデント行）。属さないときは null。
+ */
+export function getArticleClusterForSlug(slug: string): ArticleClusterData | null {
+  const articles = getAllArticles();
+  const bySlug = new Map(articles.map((a) => [a.slug, a]));
+  const current = bySlug.get(slug);
+  if (!current) return null;
+
+  if (isChildInValidCluster(current, bySlug)) {
+    const hub = bySlug.get(current.parentSlug as string) as ArticleMeta;
+    const children = articles
+      .filter((c) => c.parentSlug === hub.slug)
+      .sort((a, b) => (b.date > a.date ? 1 : -1));
+    return { hub, children };
+  }
+
+  const children = articles
+    .filter((c) => c.parentSlug === current.slug)
+    .sort((a, b) => (b.date > a.date ? 1 : -1));
+  if (children.length === 0) return null;
+  return { hub: current, children };
 }

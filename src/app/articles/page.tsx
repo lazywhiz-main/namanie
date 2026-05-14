@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { getAllArticles } from "@/lib/articles";
+import { getArticleListEntries } from "@/lib/articles";
 import { ArticleRow } from "@/components/ArticleRow";
+import { ArticleCluster } from "@/components/ArticleCluster";
 import { RevealSection } from "@/components/RevealSection";
 
 export default function ArticlesPage() {
-  const articles = getAllArticles();
+  const entries = getArticleListEntries();
 
   return (
     <div className="min-h-screen">
@@ -12,10 +12,19 @@ export default function ArticlesPage() {
         Articles
       </div>
       <RevealSection className="px-4 pb-16 sm:px-6 md:px-[100px] md:pb-24">
-        {articles.length > 0 ? (
-          articles.map((article, i) => (
-            <ArticleRow key={article.slug} article={article} index={i} />
-          ))
+        {entries.length > 0 ? (
+          entries.map((entry, i) =>
+            entry.kind === "cluster" ? (
+              <ArticleCluster
+                key={entry.hub.slug}
+                hub={entry.hub}
+                children={entry.children}
+                index={i}
+              />
+            ) : (
+              <ArticleRow key={entry.article.slug} article={entry.article} index={i} />
+            )
+          )
         ) : (
           <div className="py-9 border-b border-[var(--namanie-border)] text-[var(--namanie-dim)]">
             記事はまだありません。
