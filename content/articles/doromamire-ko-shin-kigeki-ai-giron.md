@@ -3,7 +3,6 @@ title: "泥まみれで行進しているのは我々の方だ ── 喜劇の�
 slug: "doromamire-ko-shin-kigeki-ai-giron"
 author: "鈴木"
 date: "2026-08-17"
-parentSlug: "ai-dekinai-kotoba-akita-tanoshi"
 excerpt: "ジュパンチッチの喜劇論を手がかりに、「在庫調べ」型のAI人間性防衛を批評し、喜劇を続ける実践として「真に受ける」ことを提案する。"
 ---
 
