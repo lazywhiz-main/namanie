@@ -27,8 +27,8 @@ export interface Article {
 }
 
 export type ArticleListEntry =
-  | { kind: "cluster"; hub: ArticleMeta; children: ArticleMeta[]; sortKey: string }
-  | { kind: "flat"; article: ArticleMeta; sortKey: string };
+  | { kind: "cluster"; hub: ArticleMeta; children: ArticleMeta[]; sortKey: string; listNumber: number }
+  | { kind: "flat"; article: ArticleMeta; sortKey: string; listNumber: number };
 
 const ARTICLES_DIR = path.join(process.cwd(), "content", "articles");
 
@@ -148,14 +148,44 @@ function maxIsoDate(...dates: string[]): string {
   return dates.reduce((a, b) => (a > b ? a : b));
 }
 
+type ListNumberSeed = { slug: string; date: string };
+
+function assignListNumbers(
+  entries: Array<
+    | { kind: "cluster"; hub: ArticleMeta; children: ArticleMeta[]; sortKey: string }
+    | { kind: "flat"; article: ArticleMeta; sortKey: string }
+  >
+): ArticleListEntry[] {
+  const seeds: ListNumberSeed[] = entries.map((entry) =>
+    entry.kind === "cluster"
+      ? { slug: entry.hub.slug, date: entry.hub.date }
+      : { slug: entry.article.slug, date: entry.article.date }
+  );
+  seeds.sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    return a.slug.localeCompare(b.slug);
+  });
+  const bySlug = new Map(seeds.map((seed, i) => [seed.slug, i + 1]));
+
+  return entries.map((entry) => {
+    const slug = entry.kind === "cluster" ? entry.hub.slug : entry.article.slug;
+    const listNumber = bySlug.get(slug) as number;
+    return { ...entry, listNumber };
+  });
+}
+
 /**
  * 一覧・トップ用：親子塊は1クラスタ、それ以外はフラット1行。日付の新しい順。
+ * listNumber は公開日の古い順で固定（新規追加しても既存記事の番号は変わらない）。
  */
 export function getArticleListEntries(): ArticleListEntry[] {
   const articles = getAllArticles();
   const bySlug = new Map(articles.map((a) => [a.slug, a]));
   const consumed = new Set<string>();
-  const entries: ArticleListEntry[] = [];
+  const entries: Array<
+    | { kind: "cluster"; hub: ArticleMeta; children: ArticleMeta[]; sortKey: string }
+    | { kind: "flat"; article: ArticleMeta; sortKey: string }
+  > = [];
 
   for (const hub of articles) {
     if (isChildInValidCluster(hub, bySlug)) continue;
@@ -175,7 +205,7 @@ export function getArticleListEntries(): ArticleListEntry[] {
   }
 
   entries.sort((a, b) => (b.sortKey > a.sortKey ? 1 : -1));
-  return entries;
+  return assignListNumbers(entries);
 }
 
 export type ArticleClusterData = {

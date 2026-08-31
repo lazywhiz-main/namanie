@@ -6,11 +6,14 @@ import { formatArticleDate } from "@/lib/articleDate";
 
 interface ArticleRowProps {
   article: ArticleMeta;
+  /** 公開日順で固定された一覧番号（01 = 最古の記事） */
+  listNumber: number;
+  /** Reveal アニメーション用の表示順 */
   index: number;
 }
 
-export function ArticleRow({ article, index }: ArticleRowProps) {
-  const num = String(index + 1).padStart(2, "0");
+export function ArticleRow({ article, listNumber, index }: ArticleRowProps) {
+  const num = String(listNumber).padStart(2, "0");
   const dateFormatted = formatArticleDate(article.date);
 
   return (

@@ -19,10 +19,16 @@ export default function ArticlesPage() {
                 key={entry.hub.slug}
                 hub={entry.hub}
                 children={entry.children}
+                listNumber={entry.listNumber}
                 index={i}
               />
             ) : (
-              <ArticleRow key={entry.article.slug} article={entry.article} index={i} />
+              <ArticleRow
+                key={entry.article.slug}
+                article={entry.article}
+                listNumber={entry.listNumber}
+                index={i}
+              />
             )
           )
         ) : (
